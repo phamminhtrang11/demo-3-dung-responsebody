@@ -18,22 +18,59 @@ public class StudentController {
         students.add(new Student("Ngoc Linh", "4", 16, 4, "11", "11B"));
     }
 
-    @PostMapping("/students")
-    @ResponseBody
-    public ResponseEntity<List<Student>> getStudentsByClass(@RequestBody RequestStudent requestStudent) {
-        String className = requestStudent.getClassName();
+    @GetMapping("/students/{class}")
 
-        List<Student> studentsByClass = new ArrayList<>();
+    public ResponseEntity<List<Student>> getStudentsByClass(@PathVariable("class") String className) {
+        List<Student> studentsByClass1 = new ArrayList<>();
+
         for (Student student : students) {
             if (student.getClassName().equalsIgnoreCase(className)) {
-                studentsByClass.add(student);
+                studentsByClass1.add(student);
+            }
+        }
+
+        if (studentsByClass1.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(studentsByClass1, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/students")
+    public MyRe getStudentsByClass(@RequestBody RequestStudent requestStudent) {
+        String className = requestStudent.getClassName();
+        MyRe mr = new MyRe();
+        List<Student> studentsByClass = new ArrayList<>();
+
+        if (students == null || students.size() == 0) {
+            mr.setCode("01");
+            mr.setMessage("Ko tim thay");
+            mr.setLstStudent(studentsByClass);
+            return mr;
+        }
+
+        for (Student student : students) {
+            try {
+                if (student.getClassName().equalsIgnoreCase(className)) {
+                    studentsByClass.add(student);
+                }
+            } catch (Exception ex) {
+                mr.setCode("99");
+                mr.setMessage("gap loi");
+                return mr;
             }
         }
 
         if (studentsByClass.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            mr.setCode("01");
+            mr.setMessage("Ko tim thay");
+        } else {
+            mr.setCode("00");
+            mr.setMessage("Thanh cong");
         }
 
-        return new ResponseEntity<>(studentsByClass, HttpStatus.OK);
+        mr.setLstStudent(studentsByClass);
+        return mr;
     }
 }
+
